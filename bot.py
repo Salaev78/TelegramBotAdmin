@@ -5,6 +5,8 @@ from app.handlers.start import router as start_router
 
 from app.handlers.message_handler import router as message_router
 
+from app.database.init_db import init_db
+
 from aiogram import Bot, Dispatcher
 
 from config.config import BOT_TOKEN
@@ -19,6 +21,7 @@ async def main():
     
     print("Бот запущен...")
     
+    await init_db()
     await dp.start_polling(bot)
 
 
