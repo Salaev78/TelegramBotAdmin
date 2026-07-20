@@ -22,9 +22,7 @@ class GroupMember(Base):
     )
 
     id: Mapped[int] = mapped_column(
-        BigInteger,
         primary_key=True,
-        autoincrement=True,
     )
 
     group_id: Mapped[int] = mapped_column(

@@ -13,7 +13,7 @@ print("Путь к БД:", Path(DATABASE_URL.replace("sqlite+aiosqlite:///", "")
 
 engine = create_async_engine(
     DATABASE_URL,
-    echo=True,
+    echo=False,
 )
 
 async_session = async_sessionmaker(
