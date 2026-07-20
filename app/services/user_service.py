@@ -18,16 +18,21 @@ class UserService:
 
         user = await self.repository.get_by_id(user_id)
 
-        if user is not None:
-            return user
+        if user is None:
+            return await self.repository.create(
+                user_id=user_id,
+                username=username,
+                first_name=first_name,
+                is_bot=is_bot,
+            )
 
-        user = await self.repository.create(
-            user_id=user_id,
-            username=username,
-            first_name=first_name,
-            is_bot=is_bot,
-        )
+        if user.username != username:
+            user.username = username
 
-        await self.repository.session.commit()
+        if user.first_name != first_name:
+            user.first_name = first_name
+
+        if user.is_bot != is_bot:
+            user.is_bot = is_bot
 
         return user

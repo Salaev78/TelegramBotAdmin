@@ -14,14 +14,16 @@ class GroupService:
     ):
         group = await self.repository.get_by_id(group_id)
 
-        if group is not None:
-            return group
+        if group is None:
+            return await self.repository.create(
+                group_id=group_id,
+                title=title,
+            )
 
-        group = await self.repository.create(
-            group_id=group_id,
-            title=title,
-        )
+        group.title = title
+        group.is_active = True
 
-        await self.repository.session.commit()
+        if not group.is_active:
+             group.is_active = True
 
         return group
