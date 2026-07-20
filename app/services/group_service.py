@@ -1,17 +1,16 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.models.group import Group
 from app.repositories.group_repository import GroupRepository
 
 
 class GroupService:
-    def __init__(self, session: AsyncSession):
-        self.repository = GroupRepository(session)
+    def __init__(self, repository: GroupRepository):
+        self.repository = repository
 
     async def register_group(
         self,
         group_id: int,
         title: str,
-    ):
+    ) -> Group:
         group = await self.repository.get_by_id(group_id)
 
         if group is None:
@@ -20,10 +19,10 @@ class GroupService:
                 title=title,
             )
 
-        group.title = title
-        group.is_active = True
+        if group.title != title:
+            group.title = title
 
         if not group.is_active:
-             group.is_active = True
+            group.is_active = True
 
         return group

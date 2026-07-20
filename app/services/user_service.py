@@ -5,8 +5,8 @@ from app.repositories.user_repository import UserRepository
 
 
 class UserService:
-    def __init__(self, session: AsyncSession):
-        self.repository = UserRepository(session)
+    def __init__(self, repository: UserRepository):
+        self.repository = repository
 
     async def register_user(
         self,

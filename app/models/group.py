@@ -11,5 +11,11 @@ class Group(Base):
     title: Mapped[str] = mapped_column(String(255))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     members: Mapped[list["GroupMember"]] = relationship(
+)
     back_populates="group",
+    messages = relationship(
+    "Message",
+    back_populates="group",
+    cascade="all, delete-orphan",
+
 )

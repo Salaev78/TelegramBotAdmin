@@ -7,9 +7,8 @@ from app.repositories.group_member_repository import GroupMemberRepository
 
 
 class GroupMemberService:
-    def __init__(self, session: AsyncSession):
-        self.session = session
-        self.repository = GroupMemberRepository(session)
+    def __init__(self, repository: GroupMemberRepository):
+        self.repository = repository
 
     async def register_member(
         self,

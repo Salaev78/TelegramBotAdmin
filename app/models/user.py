@@ -27,4 +27,12 @@ class User(Base):
     )
     group_members: Mapped[list["GroupMember"]] = relationship(
     back_populates="user",
-)
+    
+    )
+    
+    messages = relationship(
+    "Message",
+    back_populates="user",
+    cascade="all, delete-orphan",
+    
+    )
