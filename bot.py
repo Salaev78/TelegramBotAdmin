@@ -2,6 +2,8 @@ import asyncio
 
 from app.handlers.start import router as start_router
 from app.handlers.message_handler import router as message_router
+from app.handlers.whitelist import router as whitelist_router
+from app.handlers.blacklist import router as blacklist_router 
 from app.database.init_db import init_db
 from app.handlers.chat_member import router as chat_member_router
 from app.database.database import async_session
@@ -18,6 +20,8 @@ dp = Dispatcher()
 async def main():
     await init_db()
     dp.include_router(start_router)
+    dp.include_router(whitelist_router)
+    dp.include_router(blacklist_router)
     dp.include_router(message_router) 
     dp.include_router(chat_member_router)
     

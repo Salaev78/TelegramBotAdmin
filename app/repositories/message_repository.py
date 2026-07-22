@@ -49,5 +49,5 @@ class MessageRepository:
         result = await self.session.execute(
             delete(Message).where(Message.created_at < before)
         )
-
+        await self.session.commit()
         return result.rowcount or 0

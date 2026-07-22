@@ -1,6 +1,3 @@
-
-from aiogram.types import Message
-
 from app.models.filter_result import FilterResult
 
 from app.filters.keyword_filter import check as keyword_check
@@ -9,10 +6,16 @@ from app.filters.link_filter import check as link_check
 
 from app.filters.flood_filter import check as flood_check
 
+from app.filters.link_and_keywords_filter import check as linkandkeyword_check
+
+from app.filters.emoji_filter import check as emoji_check
+
 FILTERS = [
     keyword_check,
     link_check,
     flood_check,
+    #linkandkeyword_check,
+    emoji_check,
 ]        
         
 class SpamEngine:
