@@ -6,6 +6,7 @@ from app.handlers.whitelist import router as whitelist_router
 from app.handlers.blacklist import router as blacklist_router 
 from app.database.init_db import init_db
 from app.handlers.chat_member import router as chat_member_router
+from app.handlers.admin import router as admin_router
 from app.database.database import async_session
 from app.models.group import Group
 from sqlalchemy.orm import selectinload
@@ -22,8 +23,10 @@ async def main():
     dp.include_router(start_router)
     dp.include_router(whitelist_router)
     dp.include_router(blacklist_router)
+    dp.include_router(admin_router)
     dp.include_router(message_router) 
     dp.include_router(chat_member_router)
+    
     
     print("Бот запущен...")
     

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import BigInteger, DateTime, ForeignKey, Integer, String, Text, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -40,5 +40,20 @@ class Message(Base):
         nullable=False,
     )
 
+    is_deleted: Mapped[bool] = mapped_column(
+    Boolean,
+    default=False,
+    )
+
+    delete_reason: Mapped[str | None] = mapped_column(
+        String(32),
+        nullable=True,
+    )
+
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    
     group = relationship("Group", back_populates="messages")
     user = relationship("User", back_populates="messages")

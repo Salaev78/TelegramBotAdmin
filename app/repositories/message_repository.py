@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
+from sqlalchemy.sql import func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.message import Message
@@ -51,3 +52,40 @@ class MessageRepository:
         )
         await self.session.commit()
         return result.rowcount or 0
+
+    async def mark_deleted(
+        self,
+        telegram_id: int,
+        group_id: int,
+        reason: str,
+    ) -> None:
+        await self.session.execute(
+            update(Message)
+            .where(
+                Message.telegram_id == telegram_id,
+                Message.group_id == group_id,
+            )
+            .values(
+                is_deleted=True,
+                delete_reason=reason,
+                deleted_at=func.now(),
+            )
+        )
+
+    async def get_recent_deleted(
+        self,
+        group_id: int,
+        limit: int = 10,
+    ) -> list[Message]:
+
+        result = await self.session.execute(
+            select(Message)
+            .where(
+                Message.group_id == group_id,
+                Message.is_deleted.is_(True),
+            )
+            .order_by(Message.deleted_at.desc())
+            .limit(limit)
+        )
+
+        return list(result.scalars())

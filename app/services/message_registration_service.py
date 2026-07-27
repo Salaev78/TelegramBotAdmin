@@ -68,3 +68,27 @@ class MessageRegistrationService:
             )
 
             raise
+
+    async def mark_message_deleted(
+        self,
+        telegram_id: int,
+        group_id: int,
+        reason: str,
+    ) -> None:
+        try:
+            await self.message_service.mark_deleted(
+                telegram_id=telegram_id,
+                group_id=group_id,
+                reason=reason,
+            )
+
+            await self.session.commit()
+
+        except Exception:
+            await self.session.rollback()
+
+            logger.exception(
+                "Failed to mark message as deleted."
+            )
+
+            raise

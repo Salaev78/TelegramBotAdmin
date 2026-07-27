@@ -21,3 +21,24 @@ class MessageService:
             text=text,
             message_type=message_type,
         )
+    async def mark_deleted(
+        self,
+        telegram_id: int,
+        group_id: int,
+        reason: str,
+    ) -> None:
+        await self.repository.mark_deleted(
+            telegram_id=telegram_id,
+            group_id=group_id,
+            reason=reason,
+        )
+
+    async def get_recent_deleted(
+        self,
+        group_id: int,
+        limit: int = 10,
+    ):
+        return await self.repository.get_recent_deleted(
+            group_id,
+            limit,
+        )
