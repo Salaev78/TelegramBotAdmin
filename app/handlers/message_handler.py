@@ -32,13 +32,13 @@ async def handle_message(message: Message):
         return
 
     # Если понадобится игнорировать админов
-    # member = await message.bot.get_chat_member(
-    #     message.chat.id,
-    #     message.from_user.id,
-    # )
-    #
-    # if member.status in ("administrator", "creator"):
-    #     return
+     member = await message.bot.get_chat_member(
+         message.chat.id,
+         message.from_user.id,
+     )
+    
+     if member.status in ("administrator", "creator"):
+         return
 
     async with async_session() as session:
 
