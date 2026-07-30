@@ -4,7 +4,7 @@ from aiogram.types import Message
 from app.config import ALLOWED_USERS
 
 
-class AdminOnly(BaseFilter):
+class AllowedUser(BaseFilter):
     async def __call__(self, message: Message) -> bool:
         return (
             message.from_user is not None

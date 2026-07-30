@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import delete, select, update
-from sqlalchemy.sql import func
+from sqlalchemy import delete, select, update, case, func
+#from sqlalchemy.sql import func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.message import Message
@@ -89,3 +89,52 @@ class MessageRepository:
         )
 
         return list(result.scalars())
+
+    async def get_stats(self, group_id: int) -> dict:
+        total = await self.session.scalar(
+            select(func.count(Message.id))
+            .where(Message.group_id == group_id)
+        )
+
+        deleted = await self.session.scalar(
+            select(func.count(Message.id))
+            .where(
+                Message.group_id == group_id,
+                Message.is_deleted.is_(True),
+            )
+        )
+
+        reasons = await self.session.execute(
+            select(
+                Message.delete_reason,
+                func.count(Message.id),
+            )
+            .where(
+                Message.group_id == group_id,
+                Message.is_deleted.is_(True),
+            )
+            .group_by(Message.delete_reason)
+        )
+
+        return {
+            "total": total or 0,
+            "deleted": deleted or 0,
+            "alive": (total or 0) - (deleted or 0),
+            "reasons": dict(reasons.all()),
+            }
+    async def get_logs(
+        self,
+        group_id: int,
+        limit: int = 10,
+    ):
+        result = await self.session.execute(
+            select(Message)
+            .where(
+                Message.group_id == group_id,
+                Message.is_deleted.is_(True),
+            )
+            .order_by(Message.deleted_at.desc())
+            .limit(limit)
+        )
+
+        return result.scalars().all()

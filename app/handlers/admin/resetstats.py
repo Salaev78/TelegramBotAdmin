@@ -3,12 +3,12 @@ from aiogram.filters import Command
 from aiogram.types import Message
 
 from app.core import runtime
-from app.filters.admin_only import AdminOnly
+from app.filters.allowed_user import AllowedUser
 
 router = Router()
 
 
-@router.message(Command("resetstats"), AdminOnly())
+@router.message(Command("resetstats"), AllowedUser())
 async def reset_stats(message: Message):
     runtime.PROCESSED_MESSAGES = 0
     runtime.DELETED_MESSAGES = 0

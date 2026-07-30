@@ -4,12 +4,12 @@ from aiogram.filters.command import CommandObject
 from aiogram.types import Message
 
 from app.core import runtime
-from app.filters.admin_only import AdminOnly
+from app.filters.allowed_user import AllowedUser
 
 router = Router()
 
 
-@router.message(Command("user"), AdminOnly())
+@router.message(Command("user"), AllowedUser())
 async def user_info(
     message: Message,
     command: CommandObject,

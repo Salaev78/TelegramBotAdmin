@@ -7,14 +7,14 @@ from sqlalchemy import text
 from app.core import runtime
 from app.database.database import async_session
 
-from app.filters.admin_only import AdminOnly
+from app.filters.allowed_user import AllowedUser
 
 from aiogram import F
 
 router = Router()
 
 
-@router.message(F.text == "/status", AdminOnly())
+@router.message(F.text == "/status", AllowedUser())
 async def status(message: Message):
 
     # Проверка БД

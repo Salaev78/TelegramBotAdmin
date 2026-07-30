@@ -1,62 +1,106 @@
-from aiogram import Router
-from aiogram.filters import Command
+from aiogram import Bot, F, Router
 from aiogram.types import Message
 
 from app.database.database import async_session
+from app.filters.allowed_user import AllowedUser
+from app.keyboards.groups import groups_keyboard
 from app.repositories.message_repository import MessageRepository
-from app.services.message_service import MessageService
-from app.filters.admin_only import AdminOnly
+from app.services.group_access_service import GroupAccessService
 
 router = Router()
 
+REASON_NAMES = {
+    "keyword": "🔑 Ключевые слова",
+    "link": "🔗 Ссылки",
+    "flood": "🌊 Флуд",
+}
 
-@router.message(Command("logs"), AdminOnly())
-async def logs(message: Message):
 
-    async with async_session() as session:
-
-        message_service = MessageService(
-            MessageRepository(session)
-        )
-        print(message.chat.id)
-        deleted_messages = await message_service.get_recent_deleted(
-            group_id=message.chat.id,
-            limit=10,
-        )
-
-    if not deleted_messages:
-        await message.answer("📭 Логи пока пусты.")
-        return
-
-    lines = []
-
-    for log in deleted_messages:
-
-        username = (
-            f"@{log.username}"
-            if log.username
-            else log.full_name
+def format_logs(group_title: str, logs: list) -> str:
+    if not logs:
+        return (
+            f"📋 <b>Последние удаления</b>\n"
+            f"<blockquote>{group_title}</blockquote>\n\n"
+            f"Удалённых сообщений пока нет."
         )
 
-        text = log.text or "-"
+    text = (
+        f"📋 <b>Последние удаления</b>\n"
+        f"<blockquote>{group_title}</blockquote>\n\n"
+    )
 
-        reason = log.delete_reason or "Не указана"
+    for log in logs:
+
+        reason = REASON_NAMES.get(
+            log.delete_reason,
+            log.delete_reason or "Неизвестно",
+        )
+
+        message_text = (
+            log.text.strip()
+            if log.text
+            else "<без текста>"
+        )
+
+        if len(message_text) > 120:
+            message_text = message_text[:120] + "..."
 
         deleted_at = (
-            log.deleted_at.strftime("%H:%M:%S %d.%m.%Y")
+            log.deleted_at.strftime("%d.%m.%Y %H:%M")
             if log.deleted_at
-            else "-"
+            else "Неизвестно"
         )
 
-        lines.append(
+        text += (
             f"🕒 <b>{deleted_at}</b>\n"
-            f"👤 {username} ({log.user_id})\n"
+            f"👤 <code>{log.user_id}</code>\n"
             f"🚫 {reason}\n"
-            f"💬 <code>{text}</code>\n"
+            f"<blockquote>{message_text}</blockquote>\n\n"
         )
 
-    await message.answer(
-        "📋 <b>Последние удалённые сообщения</b>\n\n"
-        + "\n".join(lines),
-        parse_mode="HTML",
-    )
+    return text
+
+
+@router.message(F.text == "/logs", AllowedUser())
+async def logs(
+    message: Message,
+    bot: Bot,
+):
+    async with async_session() as session:
+
+        access_service = GroupAccessService(session)
+
+        groups = await access_service.get_available_groups(
+            bot,
+            message.from_user.id,
+        )
+
+        if not groups:
+            await message.answer(
+                "❌ У вас нет доступа ни к одной группе."
+            )
+            return
+
+        if len(groups) == 1:
+            repository = MessageRepository(session)
+
+            logs = await repository.get_logs(
+                groups[0].id,
+            )
+
+            await message.answer(
+                format_logs(
+                    groups[0].title,
+                    logs,
+                ),
+                parse_mode="HTML",
+            )
+            return
+
+        await message.answer(
+            "📋 Выберите группу:",
+            reply_markup=groups_keyboard(
+                groups,
+                action="logs",
+            ),
+        )

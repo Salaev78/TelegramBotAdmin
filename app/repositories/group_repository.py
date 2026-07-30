@@ -15,6 +15,12 @@ class GroupRepository:
 
         return result.scalar_one_or_none()
 
+    async def get_all(self) -> list[Group]:
+        result = await self.session.execute(
+              select(Group)
+        )
+        return result.scalars().all()
+
     async def create(
         self,
         group_id: int,

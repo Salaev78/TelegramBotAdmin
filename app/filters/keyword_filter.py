@@ -11,7 +11,7 @@ SPAM_WORDS = [
     "bet", "букмекер", "ставки", "казино",
 
     # 18+
-    "onlyfans", "of", "nsfw", "porn", "sex", "escort", "cp",
+    "onlyfans", "nsfw", "porn", "sex", "escort", "cp",
 
     # Работа / развод
     "заработок", "доход", "без вложений", "работа онлайн",
