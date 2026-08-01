@@ -1,9 +1,11 @@
 from aiogram import Bot, F, Router
-from aiogram.types import Message
+from aiogram.types import CallbackQuery, Message
 
+from app.callbacks.groups import GroupCallback
 from app.database.database import async_session
 from app.filters.allowed_user import AllowedUser
 from app.keyboards.groups import groups_keyboard
+from app.repositories.group_repository import GroupRepository
 from app.repositories.message_repository import MessageRepository
 from app.services.group_access_service import GroupAccessService
 
@@ -13,6 +15,7 @@ REASON_NAMES = {
     "keyword": "🔑 Ключевые слова",
     "link": "🔗 Ссылки",
     "flood": "🌊 Флуд",
+    "emoji": "😊 Эмодзи",
 }
 
 
@@ -82,18 +85,9 @@ async def logs(
             return
 
         if len(groups) == 1:
-            repository = MessageRepository(session)
-
-            logs = await repository.get_logs(
+            await send_logs(
+                message,
                 groups[0].id,
-            )
-
-            await message.answer(
-                format_logs(
-                    groups[0].title,
-                    logs,
-                ),
-                parse_mode="HTML",
             )
             return
 
@@ -103,4 +97,44 @@ async def logs(
                 groups,
                 action="logs",
             ),
+        )
+
+
+@router.callback_query(GroupCallback.filter(F.action == "logs"))
+async def logs_callback(
+    callback: CallbackQuery,
+    callback_data: GroupCallback,
+):
+    await callback.answer()
+
+    await send_logs(
+        callback.message,
+        callback_data.group_id,
+    )
+
+
+async def send_logs(
+    message: Message,
+    group_id: int,
+):
+    async with async_session() as session:
+
+        repository = MessageRepository(session)
+        group_repository = GroupRepository(session)
+
+        logs = await repository.get_logs(group_id)
+        group = await group_repository.get_by_id(group_id)
+
+        if group is None:
+            await message.answer(
+                "❌ Группа не найдена."
+            )
+            return
+
+        await message.answer(
+            format_logs(
+                group.title,
+                logs,
+            ),
+            parse_mode="HTML",
         )
